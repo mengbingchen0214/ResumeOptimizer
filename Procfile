@@ -1,1 +1,1 @@
-web: gunicorn --bind 0.0.0.0:5000 app:app
+web: streamlit run web_app.py --server.port $PORT --server.enableCORS false
