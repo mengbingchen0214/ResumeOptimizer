@@ -1,6 +1,6 @@
 import os
 import io
-import docx2txt
+import docx
 import PyPDF2
 from PIL import Image
 import pytesseract
@@ -21,7 +21,8 @@ if not DEEPSEEK_API_KEY:
 def extract_text_from_file(file):
     filename = file.name
     if filename.endswith('.docx'):
-        text = docx2txt.process(file)
+        document = docx.Document(file)
+        text = "\n".join([para.text for para in document.paragraphs])
     elif filename.endswith('.pdf'):
         pdf_reader = PyPDF2.PdfReader(file)
         text = ""

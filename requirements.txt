@@ -2,7 +2,7 @@ Flask
 openai
 gunicorn
 PyPDF2
-docx2txt
+python-docx
 pytesseract
 Pillow
 streamlit
