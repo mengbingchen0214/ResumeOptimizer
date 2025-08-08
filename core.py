@@ -15,8 +15,6 @@ except Exception as e:
 
 # This is where your API key is read from the environment variable
 DEEPSEEK_API_KEY = os.environ.get('DEEPSEEK_API_KEY')
-if not DEEPSEEK_API_KEY:
-    raise ValueError("DEEPSEEK_API_KEY environment variable not set.")
 
 def extract_text_from_file(file):
     filename = file.name
@@ -35,9 +33,13 @@ def extract_text_from_file(file):
         text = file.read().decode('utf-8')
     return text
 
-def get_deepseek_response(prompt):
+def get_deepseek_response(prompt, api_key=None):
+    key = api_key or DEEPSEEK_API_KEY
+    if not key:
+        raise ValueError("DeepSeek API key not provided. Please provide it in the UI or set the DEEPSEEK_API_KEY environment variable.")
+
     client = OpenAI(
-        api_key=DEEPSEEK_API_KEY,
+        api_key=key,
         base_url="https://api.deepseek.com/v1"
     )
     response = client.chat.completions.create(

@@ -3,6 +3,10 @@ from core import extract_text_from_file, get_deepseek_response
 
 st.title("AI Resume Optimizer")
 
+with st.sidebar:
+    st.header("Configuration")
+    api_key = st.text_input("Enter your DeepSeek API Key", type="password", help="Get your key from https://platform.deepseek.com/")
+
 st.header("Resume Section")
 resume_file = st.file_uploader("Upload your Resume (PDF or DOCX)", type=['pdf', 'docx'])
 
@@ -38,7 +42,7 @@ if st.button("Analyze"):
                           f"请用专业的、直接的中文口吻，避免任何废话。直接从分析开始，无需寒暄。 "
                           f"简历内容：\n{resume_text}\n\n职位描述：\n{job_description}")
 
-                response_text = get_deepseek_response(prompt)
+                response_text = get_deepseek_response(prompt, api_key=api_key if api_key else None)
                 st.success("Analysis Complete!")
                 st.markdown(response_text)
             except Exception as e:
