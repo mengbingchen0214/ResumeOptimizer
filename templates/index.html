@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Resume Optimizer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6; /* Light gray background */
+        }
+        /* Custom styling for the file input to make it look nicer */
+        input[type="file"]::file-selector-button {
+            background-color: #4f46e5;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 9999px; /* Full rounded corners */
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+        }
+        input[type="file"]::file-selector-button:hover {
+            background-color: #4338ca;
+        }
+        /* Style for the disabled button */
+        .btn-analyze:disabled {
+            background-color: #9ca3af;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+
+    <div class="bg-white p-8 md:p-12 rounded-2xl shadow-xl max-w-3xl w-full">
+        <h1 class="text-3xl md:text-4xl font-bold text-center text-gray-800 mb-8">AI Resume Optimizer</h1>
+
+        <div class="mb-8 p-6 bg-gray-50 rounded-xl border border-gray-200">
+            <h2 class="text-xl font-semibold text-gray-700 mb-4">Resume Section</h2>
+            <label for="resume-upload" class="block text-sm font-medium text-gray-700 mb-2">
+                Upload your Resume (PDF or DOCX)
+            </label>
+            <input type="file" id="resume-upload" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-violet-50 file:text-violet-700 hover:file:bg-violet-100 cursor-pointer" accept=".pdf,.docx">
+        </div>
+
+        <div class="mb-8 p-6 bg-gray-50 rounded-xl border border-gray-200">
+            <h2 class="text-xl font-semibold text-gray-700 mb-4">Job Description Section</h2>
+            <p class="text-sm text-gray-500 mb-4">Choose one of the following two options:</p>
+
+            <div class="mb-6">
+                <label for="jd-text" class="block text-sm font-medium text-gray-700 mb-2">
+                    Paste the Job Description Here
+                </label>
+                <textarea id="jd-text" rows="6" class="w-full p-3 rounded-lg border-2 border-gray-300 focus:outline-none focus:border-indigo-500 transition-colors" placeholder="e.g., 'Seeking a software engineer with 5+ years of experience...'"></textarea>
+            </div>
+
+            <div class="flex items-center my-6">
+                <div class="flex-grow border-t border-gray-300"></div>
+                <span class="flex-shrink mx-4 text-gray-500 text-sm">OR</span>
+                <div class="flex-grow border-t border-gray-300"></div>
+            </div>
+
+            <div>
+                <label for="jd-image-upload" class="block text-sm font-medium text-gray-700 mb-2">
+                    Upload Job Description as a screenshot (JPG/PNG)
+                </label>
+                <input type="file" id="jd-image-upload" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-violet-50 file:text-violet-700 hover:file:bg-violet-100 cursor-pointer" accept=".jpg,.jpeg,.png">
+            </div>
+        </div>
+
+        <div class="text-center">
+            <button id="analyze-btn" class="btn-analyze px-8 py-3 bg-indigo-600 text-white font-semibold rounded-full shadow-lg transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-indigo-500 focus:ring-opacity-50" disabled>
+                Analyze
+            </button>
+        </div>
+        
+        <div id="results" class="mt-8 p-6 bg-gray-100 rounded-xl">
+            <p class="text-gray-500 text-center">Results will appear here...</p>
+        </div>
+
+    </div>
+
+    <script>
+        // Get references to all the necessary elements
+        const resumeUpload = document.getElementById('resume-upload');
+        const jdText = document.getElementById('jd-text');
+        const jdImageUpload = document.getElementById('jd-image-upload');
+        const analyzeBtn = document.getElementById('analyze-btn');
+        const resultsDiv = document.getElementById('results');
+
+        // Function to check if all conditions for enabling the button are met
+        function checkFormState() {
+            const hasResume = resumeUpload.files.length > 0;
+            const hasJobDescription = jdText.value.trim() !== '' || jdImageUpload.files.length > 0;
+            
+            analyzeBtn.disabled = !(hasResume && hasJobDescription);
+        }
+
+        // Add event listeners to each input to monitor changes
+        resumeUpload.addEventListener('change', checkFormState);
+        jdText.addEventListener('input', () => {
+            // If the user starts typing, clear the file upload input
+            if (jdText.value.trim() !== '') {
+                jdImageUpload.value = null;
+            }
+            checkFormState();
+        });
+        jdImageUpload.addEventListener('change', () => {
+            // If the user uploads a file, clear the text area
+            if (jdImageUpload.files.length > 0) {
+                jdText.value = '';
+            }
+            checkFormState();
+        });
+
+        // Add a click event to the Analyze button for a demo
+        analyzeBtn.addEventListener('click', async () => {
+            analyzeBtn.disabled = true;
+            analyzeBtn.innerText = 'Analyzing...';
+            resultsDiv.innerHTML = '<p class="text-gray-500 text-center animate-pulse">Analyzing... Please wait a moment.</p>';
+
+            const formData = new FormData();
+            formData.append('resume', resumeUpload.files[0]);
+
+            if (jdText.value.trim() !== '') {
+                formData.append('job_description', jdText.value);
+            } else if (jdImageUpload.files.length > 0) {
+                formData.append('job_description', jdImageUpload.files[0]);
+            }
+
+            try {
+                const response = await fetch('http://127.0.0.1:5000/analyze', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Something went wrong on the server.');
+                }
+
+                const result = await response.json();
+                
+                resultsDiv.innerHTML = `
+                    <h3 class="text-lg font-semibold text-gray-800 mb-2">Analysis Complete!</h3>
+                    <pre class="whitespace-pre-wrap text-sm text-gray-700">${result.analysis}</pre>
+                `;
+
+            } catch (error) {
+                resultsDiv.innerHTML = `<p class="text-red-600 text-center">Error: ${error.message}</p>`;
+            } finally {
+                analyzeBtn.disabled = false;
+                analyzeBtn.innerText = 'Analyze';
+            }
+        });
+    </script>
+
+</body>
+</html>
