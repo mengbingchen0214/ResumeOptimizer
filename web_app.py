@@ -1,6 +1,8 @@
 import streamlit as st
 from core import extract_text_from_file, get_deepseek_response
 
+st.set_page_config(initial_sidebar_state="collapsed")
+
 st.title("AI Resume Optimizer")
 
 with st.sidebar:
@@ -42,7 +44,13 @@ if st.button("Analyze"):
                           f"请用专业的、直接的中文口吻，避免任何废话。直接从分析开始，无需寒暄。 "
                           f"简历内容：\n{resume_text}\n\n职位描述：\n{job_description}")
 
-                response_text = get_deepseek_response(prompt, api_key=api_key if api_key else None)
+                # Determine the API key to use with priority
+                final_api_key = api_key  # 1. From UI input
+                if not final_api_key and "DEEPSEEK_API_KEY" in st.secrets:
+                    final_api_key = st.secrets["DEEPSEEK_API_KEY"]  # 2. From st.secrets
+
+                # 3. The fallback to os.environ is handled in core.py
+                response_text = get_deepseek_response(prompt, api_key=final_api_key)
                 st.success("Analysis Complete!")
                 st.markdown(response_text)
             except Exception as e:
